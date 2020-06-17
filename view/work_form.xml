@@ -3,7 +3,7 @@
 this repository contains the full copyright notices and license terms. -->
 <data>
     <xpath expr="/form/field[@name='sequence']" position="after">
-      <label name="assignee"/>
-      <field name="assignee"/>
+        <label name="assignee"/>
+        <field name="assignee"/>
     </xpath>
 </data>

@@ -1,5 +1,8 @@
 <data>
     <xpath expr="/tree/field[@name='employee']" position="after">
-      <field name="role"/>
+        <field name="role"/>
+    </xpath>
+    <xpath expr="/tree" position="replace_attributes">
+        <tree editable="bottom"/>
     </xpath>
 </data>

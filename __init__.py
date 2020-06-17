@@ -6,6 +6,7 @@ from . import role
 
 def register():
     Pool.register(
+        role.WorkConfiguration,
         role.Role,
         role.Allocation,
         role.TaskPhase,

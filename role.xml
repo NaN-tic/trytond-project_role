@@ -1,69 +1,73 @@
 <tryton>
-  <data>
+    <data>
 <!-- configuration views of roles -->
-    <record model="ir.ui.view" id="project_role_view_tree">
-      <field name="model">project.role</field>
-      <field name="type">tree</field>
-      <field name="name">project_role_tree</field>
-    </record>
-    <record model="ir.ui.view" id="project_role_view_form">
-      <field name="model">project.role</field>
-      <field name="type">form</field>
-      <field name="name">project_role_form</field>
-    </record>
-    <record model="ir.action.act_window" id="act_project_role">
-      <field name="name">Project Roles</field>
-      <field name="res_model">project.role</field>
-    </record>
-    <record model="ir.action.act_window.view" id="act_project_role_tree">
-      <field name="sequence" eval="10"/>
-      <field name="view" ref="project_role_view_tree"/>
-      <field name="act_window" ref="act_project_role"/>
-    </record>
-    <record model="ir.action.act_window.view" id="act_project_role_form">
-      <field name="sequence" eval="20"/>
-      <field name="view" ref="project_role_view_form"/>
-      <field name="act_window" ref="act_project_role"/>
-    </record>
+        <record model="ir.ui.view" id="project_role_view_tree">
+            <field name="model">project.role</field>
+            <field name="type">tree</field>
+            <field name="name">project_role_tree</field>
+        </record>
+        <record model="ir.ui.view" id="project_role_view_form">
+            <field name="model">project.role</field>
+            <field name="type">form</field>
+            <field name="name">project_role_form</field>
+        </record>
+        <record model="ir.action.act_window" id="act_project_role">
+            <field name="name">Project Roles</field>
+            <field name="res_model">project.role</field>
+        </record>
+        <record model="ir.action.act_window.view" id="act_project_role_tree">
+            <field name="sequence" eval="10"/>
+            <field name="view" ref="project_role_view_tree"/>
+            <field name="act_window" ref="act_project_role"/>
+        </record>
+        <record model="ir.action.act_window.view" id="act_project_role_form">
+            <field name="sequence" eval="20"/>
+            <field name="view" ref="project_role_view_form"/>
+            <field name="act_window" ref="act_project_role"/>
+        </record>
 <!-- add roles to phase -->
-    <record model="ir.ui.view" id="project_phase_view_form">
-      <field name="model">project.work.task_phase</field>
-      <field name="name">task_phase_form</field>
-      <field name="inherit" ref="project_phase.project_phase_view_form"/>
-    </record>
-
-    <record model="ir.ui.view" id="project_phase_view_list">
-      <field name="model">project.work.task_phase</field>
-      <field name="name">task_phase_list</field>
-      <field name="inherit" ref="project_phase.project_phase_view_list"/>
-    </record>
-
+        <record model="ir.ui.view" id="project_phase_view_form">
+            <field name="model">project.work.task_phase</field>
+            <field name="name">task_phase_form</field>
+            <field name="inherit" ref="project_phase.project_phase_view_form"/>
+        </record>
+        <record model="ir.ui.view" id="project_phase_view_list">
+            <field name="model">project.work.task_phase</field>
+            <field name="name">task_phase_list</field>
+            <field name="inherit" ref="project_phase.project_phase_view_list"/>
+        </record>
 <!-- add roles to allocations -->
-  <record model="ir.ui.view" id="allocation_view_form">
-    <field name="model">project.allocation</field>
-    <field name="name">allocation_form</field>
-    <field name="inherit" ref="project_plan.allocation_view_form"/>
-  </record>
-  <record model="ir.ui.view" id="allocation_view_tree">
-    <field name="model">project.allocation</field>
-    <field name="name">allocation_tree</field>
-    <field name="inherit" ref="project_plan.allocation_view_tree"/>
-  </record>
+        <record model="ir.ui.view" id="allocation_view_form">
+            <field name="model">project.allocation</field>
+            <field name="name">allocation_form</field>
+            <field name="inherit" ref="project_plan.allocation_view_form"/>
+        </record>
+        <record model="ir.ui.view" id="allocation_view_tree">
+            <field name="model">project.allocation</field>
+            <field name="name">allocation_tree</field>
+            <field name="inherit" ref="project_plan.allocation_view_tree"/>
+        </record>
 
-  <!-- add role to task list view -->
-  <record model="ir.ui.view" id="work_view_list_simple">
-    <field name="model">project.work</field>
-    <field name="inherit" ref="project.work_view_list_simple"/>
-    <field name="name">work_view_list</field>
-  </record>
-  <record model="ir.ui.view" id="work_view_list">
-    <field name="model">project.work</field>
-	  <field name="inherit" ref="project.work_view_list"/>
-    <field name="name">work_list</field>
-  </record>
+<!-- add role to task list view -->
+        <record model="ir.ui.view" id="work_view_list_simple">
+            <field name="model">project.work</field>
+            <field name="inherit" ref="project.work_view_list_simple"/>
+            <field name="name">work_view_list</field>
+        </record>
+        <record model="ir.ui.view" id="work_view_list">
+            <field name="model">project.work</field>
+            <field name="inherit" ref="project.work_view_list"/>
+            <field name="name">work_list</field>
+        </record>
+<!-- add default employee to configuration -->
+        <record model="ir.ui.view" id="work_configuration_view_form">
+            <field name="model">work.configuration</field>
+            <field name="inherit" ref="project_sequence.work_configuration_view_form"/>
+            <field name="name">work_configuration_form</field>
+        </record>
 <!-- roles config menu entry  -->
-    <menuitem parent="project.menu_configuration" name="Roles"
-      id="menu_project_role_configuration" action="act_project_role"
-      icon="tryton-list"/>
+        <menuitem parent="project.menu_configuration" name="Roles"
+            id="menu_project_role_configuration" action="act_project_role"
+            icon="tryton-list"/>
     </data>
-  </tryton>
+</tryton>

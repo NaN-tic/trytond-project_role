@@ -54,6 +54,9 @@ Create Roles::
     >>> tester = Role()
     >>> tester.name = 'Tester'
     >>> tester.save()
+    >>> reviewer = Role()
+    >>> reviewer.name = 'Reviewer'
+    >>> reviewer.save()
 
 Create TaskPhase::
 
@@ -71,7 +74,7 @@ Create Workflow::
 
     >>> Workflow = Model.get('project.work.workflow')
     >>> workflow = Workflow()
-    >>> workflow.name = 'workflowTest'
+    >>> workflow.name = 'workflow'
     >>> workflow.save()
 
 Create Workflow Lines ::
@@ -91,64 +94,118 @@ Create Tracker::
 
     >>> Tracker = Model.get('project.work.tracker')
     >>> tracker = Tracker()
-    >>> tracker.name = 'TrackerTest'
+    >>> tracker.name = 'Tracker'
     >>> tracker.workflow = workflow
     >>> tracker.save()
 
+Create Configuration::
+
+    >>> Configuration = Model.get('work.configuration')
+    >>> config = Configuration()
+    >>> config.default_allocation_employee = employee2
+    >>> config.save()
+
+Create Project::
+
+    >>> Work = Model.get('project.work')
+    >>> project = Work()
+    >>> project.name = 'Project'
+    >>> project.company = company
+    >>> project.type = 'project'
+    >>> project.state = 'opened'
+    >>> project.save()
+
+Create Allocation::
+
+    >>> Allocation = Model.get('project.allocation')
+    >>> allocation = Allocation()
+    >>> allocation.role = dev
+    >>> allocation.work = project
+    >>> allocation.employee = employee1
+    >>> allocation.save()
+
 Create Task::
 
-    >>> Task = Model.get('project.work')
-    >>> task = Task()
-    >>> task.name = 'testTask'
+    >>> task = Work()
+    >>> task.type = 'task'
+    >>> task.parent = project
+    >>> task.name = 'Task'
     >>> task.company = company
     >>> task.tracker = tracker
     >>> task.task_phase = workflow_line2.phase
     >>> task.state = 'opened'
     >>> task.save()
 
-Create Allocation::
-
-    >>> Allocation = Model.get('project.allocation')
-    >>> allocation = Allocation()
-    >>> allocation.work = task
-    >>> allocation.role = dev
-    >>> allocation.employee = employee1
-    >>> allocation.save()
-
-    >>> allocation2 = Allocation()
-    >>> allocation2.work = task
-    >>> allocation2.role = tester
-    >>> allocation2.employee = employee2
-    >>> allocation2.save()
-
 Searcher ::
-    >>> result, = Task.find(['name','ilike', '%test%'])
+
+    >>> result, = Work.find(['name','ilike', '%Tas%'])
     >>> result.id == task.id
     True
 
 Searcher Asignee Tests::
 
-    >>> result, = Task.find(['assignee', 'ilike', '%emp2%'])
+    >>> result, = Work.find(['assignee', 'ilike', '%emp2%'])
     >>> result.id == task.id
     True
-    >>> result = Task.find(['assignee', 'ilike', '%emp1%'])
+    >>> result = Work.find(['assignee', 'ilike', '%emp1%'])
     >>> result
     []
 
 Searcher employee/role::
 
-    >>> result, = Task.find(['role_employee', 'ilike', '%emp1/dev%'])
+    >>> result, = Work.find(['role_employee', 'ilike', '%emp1/dev%'])
     >>> result.id == task.id
     True
-    >>> result, = Task.find(['role_employee', 'ilike', '%emp2/test%'])
+    >>> result, = Work.find(['role_employee', 'ilike', '%emp2/test%'])
     >>> result.id == task.id
     True
-    >>> result = Task.find(['role_employee', 'ilike', '%emp1/test%'])
+    >>> result = Work.find(['role_employee', 'ilike', '%emp1/test%'])
     >>> result
     []
-    >>> result, = Task.find(['role_employee', 'ilike', '%emp1%'])
+    >>> result, = Work.find(['role_employee', 'ilike', '%emp1%'])
     >>> result.id == task.id
     True
-    >>> result = Task.find(['role_employee', 'ilike', '%test%'])
+    >>> result = Work.find(['role_employee', 'ilike', '%test%'])
     >>> result
     []
+
+On_change_parent test::
+
+    >>> task.allocations[0].employee = employee2
+    >>> task.save()
+    >>> Work.find(['role_employee', 'ilike', '%emp1/dev%'])
+    []
+    >>> task.parent = None
+    >>> task.save()
+    >>> task.parent = project
+    >>> task.save()
+    >>> result, = Work.find(['role_employee', 'ilike', '%emp1/dev%'])
+    >>> result.id == task.id
+    True
+    >>> allocation2 = Allocation()
+    >>> allocation2.role = reviewer
+    >>> allocation2.employee = employee2
+    >>> allocation2.work = task
+    >>> allocation2.save()
+    >>> result, = Work.find(['role_employee', 'ilike', '%emp2/revi%'])
+    >>> result.id == task.id
+    True
+    >>> task.parent = None
+    >>> task.save()
+    >>> task.parent = project
+    >>> task.save()
+    >>> result, = Work.find(['role_employee', 'ilike', '%emp2/revi%'])
+    >>> result.id == task.id
+    True
+    >>> task.allocations[0].delete()
+    >>> task.save()
+    >>> result = Work.find(['role_employee', 'ilike', '%emp1/dev%'])
+    >>> result
+    []
+    >>> task.parent = None
+    >>> task.save()
+    >>> task.parent = project
+    >>> task.save()
+    >>> result, = Work.find(['role_employee', 'ilike', '%emp1/dev%'])
+    >>> result.id == task.id
+    True

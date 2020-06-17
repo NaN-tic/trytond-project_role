@@ -1,7 +1,6 @@
 from trytond.pool import Pool, PoolMeta
 from trytond.model import ModelView, ModelSQL, fields
-
-__all__ = ['Role', 'Allocation', 'TaskPhase', 'Work']
+from trytond.pyson import Eval
 
 
 class Role(ModelSQL, ModelView):
@@ -10,9 +9,15 @@ class Role(ModelSQL, ModelView):
     name = fields.Char('name', required=True)
 
 
+class WorkConfiguration(metaclass=PoolMeta):
+    __name__ = 'work.configuration'
+    default_allocation_employee = fields.Many2One('company.employee',
+        'Default Allocation Employee')
+
+
 class Allocation(metaclass=PoolMeta):
     __name__ = 'project.allocation'
-    role = fields.Many2One('project.role', "Role")
+    role = fields.Many2One('project.role', "Role", required=True)
 
 
 class TaskPhase(metaclass=PoolMeta):
@@ -25,60 +30,121 @@ class Work(metaclass=PoolMeta):
     assignee = fields.Function(fields.Many2One('company.employee',
             'Assignee'), 'get_assignee',
             searcher='search_assignee')
-
     role_employee = fields.Function(fields.Char('Role Employee'),
             'get_role_employee', searcher='search_role_employee')
 
-    def get_assignee(self, name):
-        role_need = self.task_phase.role
-        for allocation in self.allocations:
-            if allocation.role == role_need:
-                return allocation.employee.id
-        return None
+    @classmethod
+    def __setup__(cls):
+        super().__setup__()
+        # Enables allocations in Project type task
+        # allowing children task inheritthe parent allocations
+        cls.allocations.states['invisible'] &= Eval('type') != 'project'
+        if not 'type' in cls.allocations.depends:
+            cls.allocations.depends.append('type')
+
+    @fields.depends('parent', 'allocations', '_parent_parent.id')
+    def on_change_parent(self):
+        pool = Pool()
+        Allocation = pool.get('project.allocation')
+        # try except needed cause super don't have on_change_parent
+        # but it could have it in the future
+        try:
+            super(Work, self).on_change_parent()
+        except:
+            pass
+        if not self.parent or not self.parent.allocations:
+            return
+        allocations =[]
+        for allocation_parent in self.parent.allocations:
+            for allocation in self.allocations:
+                if allocation_parent.role == allocation.role:
+                    allocation.employee = allocation_parent.employee
+                    break
+            else:
+                new_allocation = Allocation()
+                new_allocation.role = allocation_parent.role
+                new_allocation.employee = allocation_parent.employee
+                new_allocation.percentage = 100.00
+                allocations.append(new_allocation)
+        self.allocations += tuple(allocations)
+
+    @fields.depends('tracker', 'allocations')
+    def on_change_tracker(self):
+        pool = Pool()
+        Allocation = pool.get('project.allocation')
+        # try except needed cause super doesn't have on_change_tracker
+        # but it could have it in the future
+        try:
+            super(Work, self).on_change_tracker()
+        except:
+            pass
+        if not self.tracker or not self.tracker.workflow:
+            return
+        allocations = []
+        for line in self.tracker.workflow.lines:
+            for alocation in self.allocations:
+                if alocation.role.id == line.phase.role.id:
+                    break
+            else:
+                Configuration = Pool().get('work.configuration')
+                allocation = Allocation()
+                allocation.role = line.phase.role
+                allocation.employee = (
+                    Configuration(1).default_allocation_employee)
+                allocation.percentage = 100.0
+                allocations.append(allocation)
+        self.allocations += tuple(allocations)
+
 
     @classmethod
-    def search_assignee(cls, name, clause):
+    def _get_assignee_query(cls):
         pool = Pool()
         Allocation = pool.get('project.allocation')
         Phase = pool.get('project.work.task_phase')
         Employee = pool.get('company.employee')
         Party = pool.get('party.party')
+        Role = pool.get('project.role')
 
         work = cls.__table__()
         allocation = Allocation.__table__()
         phase = Phase.__table__()
         employee = Employee.__table__()
         party = Party.__table__()
+        role = Role.__table__()
 
-        Operator = fields.SQL_OPERATORS[clause[1]]
         join1 = work.join(allocation, condition = work.id == allocation.work)
         join2 = join1.join(phase, condition = phase.id == work.task_phase)
         join3 = join2.join(employee, condition = allocation.employee == employee.id)
         join4 = join3.join(party, condition = party.id == employee.party)
-        query = join4.select(work.id)
-        query.where = (phase.role == allocation.role) & Operator(party.name, clause[2])
+        join5 = join4.join(role, condition = allocation.role == role.id)
+        query = join5.select(work.id)
+        query.where = (phase.role == allocation.role)
+        return query, party, role
+
+    def get_assignee(self, name):
+        if not self.task_phase:
+            return
+        role_need = self.task_phase.role
+        for allocation in self.allocations:
+            if allocation.role == role_need:
+                return allocation.employee.id
+
+    @classmethod
+    def search_assignee(cls, name, clause):
+        query, party, _ = cls._get_assignee_query()
+        Operator = fields.SQL_OPERATORS[clause[1]]
+        query.where &= (Operator(party.name, clause[2]))
         return [('id', 'in', query)]
 
     def get_role_employee(self, name):
         res = []
         for allocation in self.allocations:
             res.append('%s/%s' % (allocation.employee.rec_name,
-                    allocation.role.rec_name))
+                    allocation.role.rec_name if allocation.role else ''))
         return ' '.join(res)
 
     @classmethod
     def search_role_employee(cls, name, clause):
-        pool = Pool()
-        Allocation = pool.get('project.allocation')
-        Employee = pool.get('company.employee')
-        Party = pool.get('party.party')
-        Role = pool.get('project.role')
-        work = cls.__table__()
-        allocation = Allocation.__table__()
-        employee = Employee.__table__()
-        party = Party.__table__()
-        role = Role.__table__()
-
         Operator = fields.SQL_OPERATORS[clause[1]]
         value = clause[2]
         values = value.split('/')
@@ -91,16 +157,15 @@ class Work(metaclass=PoolMeta):
 
         if 'like' in clause[1]:
             employee_value = employee_value + '%'
-            if role:
+            if role_value:
                 role_value = '%' + role_value
 
-        join = work.join(allocation, condition = work.id == allocation.work)
-        join = join.join(employee, condition = allocation.employee == employee.id)
-        join = join.join(party, condition = party.id == employee.party)
-        if role:
-            join = join.join(role, condition = allocation.role == role.id)
-        query = join.select(work.id)
-        query.where = Operator(party.name, employee_value)
-        if role:
-            query.where &= Operator(role.name, role_value)
+        query, party, role = cls._get_assignee_query()
+
+        if role_value:
+            query.where = (Operator(role.name, role_value)
+                & Operator(party.name, employee_value))
+        else:
+            query.where = Operator(party.name, employee_value)
+
         return [('id', 'in', query)]
