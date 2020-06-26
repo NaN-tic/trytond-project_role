@@ -72,6 +72,7 @@ class Work(metaclass=PoolMeta):
     def on_change_tracker(self):
         pool = Pool()
         Allocation = pool.get('project.allocation')
+        Configuration = Pool().get('work.configuration')
         # try except needed cause super doesn't have on_change_tracker
         # but it could have it in the future
         try:
@@ -81,18 +82,17 @@ class Work(metaclass=PoolMeta):
         if not self.tracker or not self.tracker.workflow:
             return
         allocations = []
+        existing_roles = {x.role for x in self.allocations if x.role}
         for line in self.tracker.workflow.lines:
-            for alocation in self.allocations:
-                if alocation.role.id == line.phase.role.id:
-                    break
-            else:
-                Configuration = Pool().get('work.configuration')
-                allocation = Allocation()
-                allocation.role = line.phase.role
-                allocation.employee = (
-                    Configuration(1).default_allocation_employee)
-                allocation.percentage = 100.0
-                allocations.append(allocation)
+            role = line.phase.role
+            if not role or role in existing_roles:
+                continue
+            existing_roles.add(role)
+            allocation = Allocation()
+            allocation.role = role
+            allocation.employee = Configuration(1).default_allocation_employee
+            allocation.percentage = 100.0
+            allocations.append(allocation)
         self.allocations += tuple(allocations)
 
 
