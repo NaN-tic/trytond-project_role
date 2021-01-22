@@ -33,15 +33,6 @@ class Work(metaclass=PoolMeta):
     role_employee = fields.Function(fields.Char('Role Employee'),
             'get_role_employee', searcher='search_role_employee')
 
-    @classmethod
-    def __setup__(cls):
-        super().__setup__()
-        # Enables allocations in Project type task
-        # allowing children task inheritthe parent allocations
-        cls.allocations.states['invisible'] &= Eval('type') != 'project'
-        if not 'type' in cls.allocations.depends:
-            cls.allocations.depends.append('type')
-
     @fields.depends('parent', 'allocations', '_parent_parent.id')
     def on_change_parent(self):
         pool = Pool()
@@ -64,7 +55,6 @@ class Work(metaclass=PoolMeta):
                 new_allocation = Allocation()
                 new_allocation.role = allocation_parent.role
                 new_allocation.employee = allocation_parent.employee
-                new_allocation.percentage = 100.00
                 allocations.append(new_allocation)
         self.allocations += tuple(allocations)
 
@@ -91,7 +81,6 @@ class Work(metaclass=PoolMeta):
             allocation = Allocation()
             allocation.role = role
             allocation.employee = Configuration(1).default_allocation_employee
-            allocation.percentage = 100.0
             allocations.append(allocation)
         self.allocations += tuple(allocations)
 

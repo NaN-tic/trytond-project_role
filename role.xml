@@ -40,12 +40,12 @@
         <record model="ir.ui.view" id="allocation_view_form">
             <field name="model">project.allocation</field>
             <field name="name">allocation_form</field>
-            <field name="inherit" ref="project_plan.allocation_view_form"/>
+            <field name="inherit" ref="project_allocation.allocation_view_form"/>
         </record>
         <record model="ir.ui.view" id="allocation_view_tree">
             <field name="model">project.allocation</field>
             <field name="name">allocation_tree</field>
-            <field name="inherit" ref="project_plan.allocation_view_tree"/>
+            <field name="inherit" ref="project_allocation.allocation_view_tree"/>
         </record>
 
 <!-- add role to task list view -->
