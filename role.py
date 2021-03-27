@@ -1,6 +1,5 @@
 from trytond.pool import Pool, PoolMeta
 from trytond.model import ModelView, ModelSQL, fields
-from trytond.pyson import Eval
 
 
 class Role(ModelSQL, ModelView):
