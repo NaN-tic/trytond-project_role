@@ -18,6 +18,11 @@ Create company::
     >>> _ = create_company()
     >>> company = get_company()
 
+Get status::
+
+    >>> WorkStatus = Model.get('project.work.status')
+    >>> open, = WorkStatus.find([('name', '=', "Open")])
+
 Create party::
 
     >>> Party = Model.get('party.party')
@@ -112,7 +117,7 @@ Create Project::
     >>> project.name = 'Project'
     >>> project.company = company
     >>> project.type = 'project'
-    >>> project.state = 'opened'
+    >>> project.status = open
     >>> project.save()
 
 Create Allocation::
@@ -133,7 +138,7 @@ Create Task::
     >>> task.company = company
     >>> task.tracker = tracker
     >>> task.task_phase = workflow_line2.phase
-    >>> task.state = 'opened'
+    >>> task.status = open
     >>> task.save()
 
 Searcher ::
