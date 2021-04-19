@@ -63,17 +63,19 @@ Create Roles::
     >>> reviewer.name = 'Reviewer'
     >>> reviewer.save()
 
-Create TaskPhase::
+Create Status::
 
-    >>> Task_Phase = Model.get('project.work.task_phase')
-    >>> phase = Task_Phase()
-    >>> phase.name = 'inici'
-    >>> phase.role = dev
-    >>> phase.save()
-    >>> phase2 = Task_Phase()
-    >>> phase2.name = 'test'
-    >>> phase2.role = tester
-    >>> phase2.save()
+    >>> Status = Model.get('project.work.status')
+    >>> status = Status()
+    >>> status.name = 'Start'
+    >>> status.role = dev
+    >>> status.types = ['task']
+    >>> status.save()
+    >>> status2 = Status()
+    >>> status2.name = 'Test'
+    >>> status2.role = tester
+    >>> status2.types = ['task']
+    >>> status2.save()
 
 Create Workflow::
 
@@ -84,15 +86,15 @@ Create Workflow::
 
 Create Workflow Lines ::
 
-    >>> Workflow_Line = Model.get('project.work.workflow.line')
-    >>> workflow_line = Workflow_Line()
+    >>> WorkflowLine = Model.get('project.work.workflow.line')
+    >>> workflow_line = WorkflowLine()
     >>> workflow_line.workflow = workflow
-    >>> workflow_line.phase = phase
+    >>> workflow_line.status = status
     >>> workflow_line.save()
 
-    >>> workflow_line2 = Workflow_Line()
+    >>> workflow_line2 = WorkflowLine()
     >>> workflow_line2.workflow = workflow
-    >>> workflow_line2.phase = phase2
+    >>> workflow_line2.status = status2
     >>> workflow_line2.save()
 
 Create Tracker::
@@ -119,6 +121,8 @@ Create Project::
     >>> project.type = 'project'
     >>> project.status = open
     >>> project.save()
+    >>> project.allocations
+    []
 
 Create Allocation::
 
@@ -137,20 +141,19 @@ Create Task::
     >>> task.name = 'Task'
     >>> task.company = company
     >>> task.tracker = tracker
-    >>> task.task_phase = workflow_line2.phase
-    >>> task.status = open
+    >>> task.status = workflow_line2.status
     >>> task.save()
 
 Searcher ::
 
     >>> result, = Work.find(['name','ilike', '%Tas%'])
-    >>> result.id == task.id
+    >>> result == task
     True
 
 Searcher Asignee Tests::
 
     >>> result, = Work.find(['assignee', 'ilike', '%emp2%'])
-    >>> result.id == task.id
+    >>> result == task
     True
     >>> result = Work.find(['assignee', 'ilike', '%emp1%'])
     >>> result
@@ -158,17 +161,19 @@ Searcher Asignee Tests::
 
 Searcher employee/role::
 
-    >>> result, = Work.find(['role_employee', 'ilike', '%emp1/dev%'])
-    >>> result.id == task.id
+    >>> result = Work.find(['role_employee', 'ilike', '%emp1/dev%'],
+    ...     order=[('id', 'ASC')])
+    >>> result == [project, task]
     True
     >>> result, = Work.find(['role_employee', 'ilike', '%emp2/test%'])
-    >>> result.id == task.id
+    >>> result == task
     True
     >>> result = Work.find(['role_employee', 'ilike', '%emp1/test%'])
     >>> result
     []
-    >>> result, = Work.find(['role_employee', 'ilike', '%emp1%'])
-    >>> result.id == task.id
+    >>> result = Work.find(['role_employee', 'ilike', '%emp1%'],
+    ...     order=[('id', 'ASC')])
+    >>> result == [project, task]
     True
     >>> result = Work.find(['role_employee', 'ilike', '%test%'])
     >>> result
@@ -178,14 +183,16 @@ On_change_parent test::
 
     >>> task.allocations[0].employee = employee2
     >>> task.save()
-    >>> Work.find(['role_employee', 'ilike', '%emp1/dev%'])
-    []
+    >>> result = Work.find(['role_employee', 'ilike', '%emp1/dev%'])
+    >>> result == [project]
+    True
     >>> task.parent = None
     >>> task.save()
     >>> task.parent = project
     >>> task.save()
-    >>> result, = Work.find(['role_employee', 'ilike', '%emp1/dev%'])
-    >>> result.id == task.id
+    >>> result = Work.find(['role_employee', 'ilike', '%emp1/dev%'],
+    ...     order=[('id', 'ASC')])
+    >>> result == [project, task]
     True
     >>> allocation2 = Allocation()
     >>> allocation2.role = reviewer
@@ -193,24 +200,26 @@ On_change_parent test::
     >>> allocation2.work = task
     >>> allocation2.save()
     >>> result, = Work.find(['role_employee', 'ilike', '%emp2/revi%'])
-    >>> result.id == task.id
+    >>> result == task
     True
     >>> task.parent = None
     >>> task.save()
     >>> task.parent = project
     >>> task.save()
     >>> result, = Work.find(['role_employee', 'ilike', '%emp2/revi%'])
-    >>> result.id == task.id
+    >>> result == task
     True
     >>> task.allocations[0].delete()
     >>> task.save()
-    >>> result = Work.find(['role_employee', 'ilike', '%emp1/dev%'])
-    >>> result
-    []
+    >>> result = Work.find(['role_employee', 'ilike', '%emp1/dev%'],
+    ...     order=[('id', 'ASC')])
+    >>> result == [project]
+    True
     >>> task.parent = None
     >>> task.save()
     >>> task.parent = project
     >>> task.save()
-    >>> result, = Work.find(['role_employee', 'ilike', '%emp1/dev%'])
-    >>> result.id == task.id
+    >>> result = Work.find(['role_employee', 'ilike', '%emp1/dev%'],
+    ...     order=[('id', 'ASC')])
+    >>> result == [project, task]
     True

@@ -9,6 +9,6 @@ def register():
         role.WorkConfiguration,
         role.Role,
         role.Allocation,
-        role.TaskPhase,
+        role.WorkStatus,
         role.Work,
         module='project_role', type_='model')

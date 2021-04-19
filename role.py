@@ -19,8 +19,8 @@ class Allocation(metaclass=PoolMeta):
     role = fields.Many2One('project.role', "Role", required=True)
 
 
-class TaskPhase(metaclass=PoolMeta):
-    __name__= 'project.work.task_phase'
+class WorkStatus(metaclass=PoolMeta):
+    __name__= 'project.work.status'
     role = fields.Many2One('project.role', "Role")
 
 
@@ -73,7 +73,7 @@ class Work(metaclass=PoolMeta):
         allocations = []
         existing_roles = {x.role for x in self.allocations if x.role}
         for line in self.tracker.workflow.lines:
-            role = line.phase.role
+            role = line.status.role
             if not role or role in existing_roles:
                 continue
             existing_roles.add(role)
@@ -88,31 +88,31 @@ class Work(metaclass=PoolMeta):
     def _get_assignee_query(cls):
         pool = Pool()
         Allocation = pool.get('project.allocation')
-        Phase = pool.get('project.work.task_phase')
+        Status = pool.get('project.work.status')
         Employee = pool.get('company.employee')
         Party = pool.get('party.party')
         Role = pool.get('project.role')
 
         work = cls.__table__()
         allocation = Allocation.__table__()
-        phase = Phase.__table__()
+        status = Status.__table__()
         employee = Employee.__table__()
         party = Party.__table__()
         role = Role.__table__()
 
         join1 = work.join(allocation, condition = work.id == allocation.work)
-        join2 = join1.join(phase, condition = phase.id == work.task_phase)
+        join2 = join1.join(status, condition = status.id == work.status)
         join3 = join2.join(employee, condition = allocation.employee == employee.id)
         join4 = join3.join(party, condition = party.id == employee.party)
         join5 = join4.join(role, condition = allocation.role == role.id)
         query = join5.select(work.id)
-        query.where = (phase.role == allocation.role)
+        query.where = (status.role == allocation.role)
         return query, party, role
 
     def get_assignee(self, name):
-        if not self.task_phase:
+        if not self.status:
             return
-        role_need = self.task_phase.role
+        role_need = self.status.role
         for allocation in self.allocations:
             if allocation.role == role_need:
                 return allocation.employee.id

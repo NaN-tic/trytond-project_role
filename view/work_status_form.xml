@@ -1,5 +1,5 @@
 <data>
-    <xpath expr="/form/field[@name='sequence']" position="after">
+    <xpath expr="//field[@name='sequence']" position="after">
         <label name="role"/>
         <field name="role"/>
     </xpath>

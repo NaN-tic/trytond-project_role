@@ -25,16 +25,16 @@
             <field name="view" ref="project_role_view_form"/>
             <field name="act_window" ref="act_project_role"/>
         </record>
-<!-- add roles to phase -->
-        <record model="ir.ui.view" id="project_phase_view_form">
-            <field name="model">project.work.task_phase</field>
-            <field name="name">task_phase_form</field>
-            <field name="inherit" ref="project_phase.project_phase_view_form"/>
+<!-- add roles to status -->
+        <record model="ir.ui.view" id="work_status_view_form">
+            <field name="model">project.work.status</field>
+            <field name="name">work_status_form</field>
+            <field name="inherit" ref="project.work_status_view_form"/>
         </record>
-        <record model="ir.ui.view" id="project_phase_view_list">
-            <field name="model">project.work.task_phase</field>
-            <field name="name">task_phase_list</field>
-            <field name="inherit" ref="project_phase.project_phase_view_list"/>
+        <record model="ir.ui.view" id="work_status_view_list">
+            <field name="model">project.work.status</field>
+            <field name="name">work_status_list</field>
+            <field name="inherit" ref="project.work_status_view_list"/>
         </record>
 <!-- add roles to allocations -->
         <record model="ir.ui.view" id="allocation_view_form">
