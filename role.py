@@ -1,6 +1,11 @@
+from email.mime.text import MIMEText
+from email.header import Header
 from trytond.pool import Pool, PoolMeta
 from trytond.model import ModelView, ModelSQL, fields
+from trytond.sendmail import sendmail_transactional
+from trytond.config import config
 
+FROM_ADDR = config.get('email', 'from')
 
 class Role(ModelSQL, ModelView):
     'Project Role'
@@ -31,6 +36,81 @@ class Work(metaclass=PoolMeta):
             searcher='search_assignee')
     role_employee = fields.Function(fields.Char('Role Employee'),
             'get_role_employee', searcher='search_role_employee')
+
+    @classmethod
+    def write(cls, *args):
+        actions = iter(args)
+        previous = {}
+        after = {}
+
+        for records, values in zip(actions, actions):
+            for record in records:
+                previous[record.id] = {
+                    'assignee': record.assignee,
+                    'phase': record.status,
+                    }
+
+        super().write(*args)
+
+        for record in cls.browse(previous.keys()):
+            if(record.assignee != previous.get(record.id)):
+                after[record.id] = {
+                    'assignee': record.assignee,
+                    'phase': record.status,
+                    }
+                record.send_assignee_mail(previous[record.id], after[record.id])
+
+    def send_assignee_mail(self, previous, after):
+        pool = Pool()
+        User = pool.get('res.user')
+        users = User.search([('id', '=', self.write_uid)], limit=1)
+        if users:
+            user, = users
+        else:
+            user = None
+        body = []
+        body.append(u'<div style="background: #EEEEEE; padding-left: 10px; '
+                'padding-bottom: 10px">'
+                '<a href="%(url)s">'
+                '<h2 style="margin: 0px 0px 0px 0px; '
+                'padding: 0px 0px 0px 0px;">%(name)s</h2>'
+                '</a>'
+                '<br>'
+                '<b>Assignee: </b>'
+                '<span style="color:red;">%(old_assignee)s</span>'
+                ' -> <span style="color:green;">%(new_assignee)s</span><br/>'
+                '<b>Status: </b>'
+                '<span style="color:red;">%(previous_phase)s</span>'
+                ' -> <span style="color:green;">%(after_phase)s</span><br/>'
+                '<small>'
+                '%(operation)s by %(write_user)s on %(write_date)s'
+                '</small>' % {
+                'url':self.__href__,
+                'name' : self.rec_name,
+                'old_assignee' :previous.get('assignee').party.name,
+                'new_assignee' : after.get('assignee').party.name,
+                'previous_phase' :previous.get('phase').name,
+                'after_phase' : after.get('phase').name,
+                'operation': 'Updated' if user else 'Created',
+                'write_user': user.employee.party.name if user and user.employee
+                    else '-',
+                'write_date' : self.write_date,
+                })
+
+        body.append(u'</div>')
+        body = u'<br/>\n'.join(body)
+        body = u'''<html><head>
+            <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+            </head>
+            <body style="font-family: courier">%s</body>
+            </html>''' % body
+
+        msg = MIMEText(body, 'html',_charset='utf-8')
+        msg['From'] = FROM_ADDR
+        msg['To'] = self.assignee.party.email
+        msg['Subject'] = Header("You were assigned %s" % self.rec_name, 'utf-8')
+        if msg['To']:
+            sendmail_transactional(msg['From'], msg['To'], msg)
 
     @fields.depends('parent', 'allocations', '_parent_parent.id')
     def on_change_parent(self):
