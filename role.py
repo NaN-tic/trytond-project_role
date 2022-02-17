@@ -69,6 +69,16 @@ class Work(metaclass=PoolMeta):
         else:
             user = None
         body = []
+        previous_assignee = previous.get('assignee')
+        if previous_assignee:
+            previous_assignee = previous_assignee.party.name
+        else:
+            previous_assignee = '-'
+        after_assignee = after.get('assignee')
+        if after_assignee:
+            after_assignee = after_assignee.party.name
+        else:
+            after_assignee = '-'
         body.append(u'<div style="background: #EEEEEE; padding-left: 10px; '
                 'padding-bottom: 10px">'
                 '<a href="%(url)s">'
@@ -86,11 +96,11 @@ class Work(metaclass=PoolMeta):
                 '%(operation)s by %(write_user)s on %(write_date)s'
                 '</small>' % {
                 'url':self.__href__,
-                'name' : self.rec_name,
-                'old_assignee' :previous.get('assignee').party.name,
-                'new_assignee' : after.get('assignee').party.name,
-                'previous_phase' :previous.get('phase').name,
-                'after_phase' : after.get('phase').name,
+                'name': self.rec_name,
+                'old_assignee': previous_assignee,
+                'new_assignee': after_assignee,
+                'previous_phase': previous.get('phase').name,
+                'after_phase': after.get('phase').name,
                 'operation': 'Updated' if user else 'Created',
                 'write_user': user.employee.party.name if user and user.employee
                     else '-',
