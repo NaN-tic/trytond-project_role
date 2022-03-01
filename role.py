@@ -53,7 +53,7 @@ class Work(metaclass=PoolMeta):
         super().write(*args)
 
         for record in cls.browse(previous.keys()):
-            if not record.assignee:
+            if not record.assignee or not record.assignee.party.email:
                 continue
             if(record.assignee != previous.get(record.id)):
                 after[record.id] = {
@@ -66,7 +66,7 @@ class Work(metaclass=PoolMeta):
         pool = Pool()
         User = pool.get('res.user')
 
-        if not self.assignee:
+        if not self.assignee or not self.assignee.party.email:
             return
 
         users = User.search([('id', '=', self.write_uid)], limit=1)
