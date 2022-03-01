@@ -53,6 +53,8 @@ class Work(metaclass=PoolMeta):
         super().write(*args)
 
         for record in cls.browse(previous.keys()):
+            if not record.assignee:
+                continue
             if(record.assignee != previous.get(record.id)):
                 after[record.id] = {
                     'assignee': record.assignee,
@@ -63,11 +65,16 @@ class Work(metaclass=PoolMeta):
     def send_assignee_mail(self, previous, after):
         pool = Pool()
         User = pool.get('res.user')
+
+        if not self.assignee:
+            return
+
         users = User.search([('id', '=', self.write_uid)], limit=1)
         if users:
             user, = users
         else:
             user = None
+
         body = []
         previous_assignee = previous.get('assignee')
         if previous_assignee:
