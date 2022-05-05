@@ -69,5 +69,17 @@
         <menuitem parent="project.menu_configuration" name="Roles"
             id="menu_project_role_configuration" action="act_project_role"
             icon="tryton-list"/>
+
+        <record model="ir.rule.group" id="rule_group_project_allocation">
+            <field name="name">User in company</field>
+            <field name="model" search="[('model', '=', 'project.allocation')]"/>
+            <field name="global_p" eval="True"/>
+        </record>
+        <record model="ir.rule" id="rule_project_allocation1">
+            <field name="domain"
+                eval="[('company', 'in', Eval('companies', []))]"
+                pyson="1"/>
+            <field name="rule_group" ref="rule_group_project_allocation"/>
+        </record>
     </data>
 </tryton>
