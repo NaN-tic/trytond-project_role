@@ -55,12 +55,12 @@ class Work(metaclass=PoolMeta):
         for record in cls.browse(previous.keys()):
             if not record.assignee or not record.assignee.party.email:
                 continue
-            if(record.assignee != previous.get(record.id)):
-                after[record.id] = {
+            if record.assignee != previous.get(record.id, {}).get('assignee'):
+                current = {
                     'assignee': record.assignee,
                     'phase': record.status,
                     }
-                record.send_assignee_mail(previous[record.id], after[record.id])
+                record.send_assignee_mail(previous[record.id], current)
 
     def send_assignee_mail(self, previous, after):
         pool = Pool()
