@@ -232,7 +232,7 @@ class Work(metaclass=PoolMeta):
     def search_role_employee(cls, name, clause):
         Operator = fields.SQL_OPERATORS[clause[1]]
         value = clause[2]
-        values = value.split('/')
+        values = (value or '').split('/')
 
         employee_value = values[0]
         if len(values) > 1:
