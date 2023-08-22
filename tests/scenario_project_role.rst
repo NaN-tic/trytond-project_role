@@ -108,7 +108,7 @@ Create Tracker::
 Create Configuration::
 
     >>> Configuration = Model.get('work.configuration')
-    >>> config = Configuration()
+    >>> config = Configuration(1)
     >>> config.default_allocation_employee = employee2
     >>> config.save()
 
