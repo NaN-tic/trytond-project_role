@@ -1,0 +1,47 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "field:project.allocation,role:"
+msgid "Role"
+msgstr "Rol"
+
+msgctxt "field:project.role,name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:project.work,assignee:"
+msgid "Assignee"
+msgstr "Assigna"
+
+msgctxt "field:project.work,role_employee:"
+msgid "Role Employee"
+msgstr "Rol empleat"
+
+msgctxt "field:project.work.status,role:"
+msgid "Role"
+msgstr "Rols"
+
+msgctxt "field:res.user,send_own_assignee:"
+msgid "Send Own Assignee"
+msgstr "Envia assignació pròpia"
+
+msgctxt "field:work.configuration,default_allocation_employee:"
+msgid "Default Allocation Employee"
+msgstr "Assigna empleat per defecte"
+
+msgctxt "model:ir.action,name:act_project_role"
+msgid "Project Roles"
+msgstr "Rols projecte"
+
+msgctxt "model:ir.rule.group,name:rule_group_project_allocation"
+msgid "User in company"
+msgstr "Usuari a les empreses"
+
+msgctxt "model:ir.ui.menu,name:menu_project_role_configuration"
+msgid "Roles"
+msgstr "Rols"
+
+msgctxt "model:project.role,name:"
+msgid "Project Role"
+msgstr "Rol projecte"
