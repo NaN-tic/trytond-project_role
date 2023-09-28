@@ -3,6 +3,7 @@
 # the full copyright notices and license terms.
 from trytond.pool import Pool
 from . import role
+from . import user
 
 def register():
     Pool.register(
@@ -11,4 +12,5 @@ def register():
         role.Allocation,
         role.WorkStatus,
         role.Work,
+        user.User,
         module='project_role', type_='model')

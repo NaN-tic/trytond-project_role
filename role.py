@@ -4,13 +4,15 @@ from trytond.pool import Pool, PoolMeta
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.sendmail import sendmail_transactional
 from trytond.config import config
+from trytond.transaction import Transaction
 
 FROM_ADDR = config.get('email', 'from')
+
 
 class Role(ModelSQL, ModelView):
     'Project Role'
     __name__ = 'project.role'
-    name = fields.Char('name', required=True)
+    name = fields.Char('Name', required=True)
 
 
 class WorkConfiguration(metaclass=PoolMeta):
@@ -69,11 +71,12 @@ class Work(metaclass=PoolMeta):
         if not self.assignee or not self.assignee.party.email:
             return
 
+        user_id = Transaction().user
+
         users = User.search([('id', '=', self.write_uid)], limit=1)
-        if users:
-            user, = users
-        else:
-            user = None
+        user = users[0] if users else None
+        if not user or (user.id == user_id and not user.send_own_assignee):
+            return
 
         body = []
         previous_assignee = previous.get('assignee')
