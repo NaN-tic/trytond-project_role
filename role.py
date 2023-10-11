@@ -43,7 +43,6 @@ class Work(metaclass=PoolMeta):
     def write(cls, *args):
         actions = iter(args)
         previous = {}
-        after = {}
 
         for records, values in zip(actions, actions):
             for record in records:
