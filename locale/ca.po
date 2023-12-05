@@ -12,7 +12,7 @@ msgstr "Nom"
 
 msgctxt "field:project.work,assignee:"
 msgid "Assignee"
-msgstr "Assigna"
+msgstr "Assignat"
 
 msgctxt "field:project.work,role_employee:"
 msgid "Role Employee"
