@@ -108,8 +108,12 @@ Create Tracker::
 Create Configuration::
 
     >>> Configuration = Model.get('work.configuration')
+    >>> Sequence = Model.get('ir.sequence')
+    >>> work_sequence, = Sequence.find(
+    ...     [('sequence_type.name', '=', "Work")], limit=1)
     >>> config = Configuration(1)
     >>> config.default_allocation_employee = employee2
+    >>> config.work_sequence = work_sequence
     >>> config.save()
 
 Create Project::
