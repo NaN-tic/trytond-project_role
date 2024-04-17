@@ -72,7 +72,7 @@
 
         <record model="ir.rule.group" id="rule_group_project_allocation">
             <field name="name">User in company</field>
-            <field name="model" search="[('model', '=', 'project.allocation')]"/>
+            <field name="model">project.allocation</field>
             <field name="global_p" eval="True"/>
         </record>
         <record model="ir.rule" id="rule_project_allocation1">
