@@ -34,8 +34,7 @@ class WorkStatus(metaclass=PoolMeta):
 class Work(metaclass=PoolMeta):
     __name__ = 'project.work'
     assignee = fields.Function(fields.Many2One('company.employee',
-            'Assignee'), 'get_assignee',
-            searcher='search_assignee')
+            'Assignee'), 'get_assignee', searcher='search_assignee')
     role_employee = fields.Function(fields.Char('Role Employee'),
             'get_role_employee', searcher='search_role_employee')
 
@@ -206,7 +205,7 @@ class Work(metaclass=PoolMeta):
         join5 = join4.join(role, condition = allocation.role == role.id)
         query = join5.select(work.id)
         query.where = (status.role == allocation.role)
-        return query, party, role
+        return query, party, role, employee
 
     def get_assignee(self, name):
         if not self.status:
@@ -218,9 +217,13 @@ class Work(metaclass=PoolMeta):
 
     @classmethod
     def search_assignee(cls, name, clause):
-        query, party, _ = cls._get_assignee_query()
+        query, party, _, employee = cls._get_assignee_query()
         Operator = fields.SQL_OPERATORS[clause[1]]
-        query.where &= (Operator(party.name, clause[2]))
+        value = clause[2]
+        if isinstance(value, str):
+            query.where &= (Operator(party.name, clause[2]))
+        else:
+            query.where &= (Operator(employee.id, value))
         return [('id', 'in', query)]
 
     def get_role_employee(self, name):
@@ -247,7 +250,7 @@ class Work(metaclass=PoolMeta):
             if role_value:
                 role_value = '%' + role_value
 
-        query, party, role = cls._get_assignee_query()
+        query, party, role, _ = cls._get_assignee_query()
 
         if role_value:
             query.where = (Operator(role.name, role_value)
