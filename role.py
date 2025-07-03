@@ -37,6 +37,23 @@ class Work(metaclass=PoolMeta):
             'Assignee'), 'get_assignee', searcher='search_assignee')
     role_employee = fields.Function(fields.Char('Role Employee'),
             'get_role_employee', searcher='search_role_employee')
+    mine = fields.Function(fields.Boolean('Mine'), 'on_change_with_mine',
+        searcher='search_mine')
+
+    @fields.depends('employee')
+    def on_change_with_mine(self, name=None):
+        employee_id = Transaction().context.get('employee', -1)
+        if (employee_id == (self.assignee and self.assignee.id)):
+            return True
+        return False
+
+    @classmethod
+    def search_mine(cls, name, clause):
+        employee_id = Transaction().context.get('employee', -1)
+        _, operator, value = clause
+        if not value:
+            operator = '!=' if operator == '=' else '='
+        return [('assignee', operator, employee_id)]
 
     @classmethod
     def write(cls, *args):
