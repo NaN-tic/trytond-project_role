@@ -40,7 +40,7 @@ class Work(metaclass=PoolMeta):
     mine = fields.Function(fields.Boolean('Mine'), 'on_change_with_mine',
         searcher='search_mine')
 
-    @fields.depends('employee')
+    @fields.depends('assignee')
     def on_change_with_mine(self, name=None):
         employee_id = Transaction().context.get('employee', -1)
         if (employee_id == (self.assignee and self.assignee.id)):
