@@ -16,7 +16,7 @@ class Role(ModelSQL, ModelView):
 
 
 class WorkConfiguration(metaclass=PoolMeta):
-    __name__ = 'work.configuration'
+    __name__ = 'project.configuration'
     default_allocation_employee = fields.Many2One('company.employee',
         'Default Allocation Employee')
 
@@ -176,7 +176,7 @@ class Work(metaclass=PoolMeta):
     def on_change_tracker(self):
         pool = Pool()
         Allocation = pool.get('project.allocation')
-        Configuration = Pool().get('work.configuration')
+        Configuration = Pool().get('project.configuration')
         # try except needed cause super doesn't have on_change_tracker
         # but it could have it in the future
         try:
