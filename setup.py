@@ -12,7 +12,6 @@ PREFIX = 'nantic'
 MODULE2PREFIX = {
     'project_allocation': 'nantic',
     'project_phase': 'nantic',
-    'project_sequence': 'nantic',
 }
 
 

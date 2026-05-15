@@ -101,9 +101,9 @@ class Test(unittest.TestCase):
         tracker.save()
 
         # Create Configuration
-        Configuration = Model.get('work.configuration')
+        Configuration = Model.get('project.configuration')
         Sequence = Model.get('ir.sequence')
-        work_sequence, = Sequence.find([('sequence_type.name', '=', "Work")],
+        work_sequence, = Sequence.find([('name', '=', "Work Effort")],
                                        limit=1)
         config = Configuration(1)
         config.default_allocation_employee = employee2
