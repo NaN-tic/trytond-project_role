@@ -3,7 +3,7 @@ from email.header import Header
 from trytond.pool import Pool, PoolMeta
 from trytond.model import ModelView, ModelSQL, fields
 from trytond.sendmail import sendmail_transactional
-from trytond.config import config
+import trytond.config as config
 from trytond.transaction import Transaction
 
 FROM_ADDR = config.get('email', 'from')
